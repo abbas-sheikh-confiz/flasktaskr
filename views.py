@@ -34,7 +34,7 @@ def logout():
 def login():
     if request.method == "POST":
         if request.form['username'] != app.config['USERNAME'] \
-                request.form['password'] != app.config['PASSWORD']:
+                or request.form['password'] != app.config['PASSWORD']:
             error = 'Invalid Credentials. Please try again.'
             return render_template('login.html', error=error)
         else:
