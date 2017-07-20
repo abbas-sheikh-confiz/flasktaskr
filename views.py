@@ -62,14 +62,14 @@ def tasks():
 def new_task():
     form = AddTaskForm(request.form)
     if request.method == "POST":
-        # if form.validate_on_submit():
-        new_task = Task(form.name.data,
-                        form.due_date.data,
-                        form.priority.data,
-                        1)
-        db.session.add(new_task)
-        db.session.commit()
-        flash('New entry was successfully posted. Thanks.')
+        if form.validate_on_submit():
+            new_task = Task(form.name.data,
+                            form.due_date.data,
+                            form.priority.data,
+                            1)
+            db.session.add(new_task)
+            db.session.commit()
+            flash('New entry was successfully posted. Thanks.')
     return redirect(url_for('tasks'))
 
 # mark task as complete
