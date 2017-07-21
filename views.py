@@ -1,5 +1,5 @@
 # project/views.py
-from forms import AddTaskForm
+from forms import AddTaskForm, RegisterForm, LoginForm
 from functools import wraps
 from flask import Flask, flash, url_for, redirect, render_template, \
                   request, session
@@ -11,7 +11,7 @@ app.config.from_object('_config')
 db = SQLAlchemy(app)
 
 # import task model
-from models import Task
+from models import Task, User
 
 def login_required(test):
     @wraps(test)
@@ -24,6 +24,25 @@ def login_required(test):
     return wrap
 
 # route handlers
+@app.route('/register/', methods=["GET", "POST"])
+def register():
+    error = None
+    form = RegisterForm(request.form)
+    if request.method == "POST":
+        if form.validate_on_submit():
+            new_user = User(
+                name = form.name.data,
+                email = form.email.data,
+                password = form.password.data,
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Thanks for registration. Please login.')
+            return redirect(url_for('login'))
+        else:
+            flash('Data not validated')
+    return render_template('register.html', form=form, error=error)
+
 @app.route('/logout/')
 def logout():
     session.pop('logged_in', None)
@@ -33,16 +52,19 @@ def logout():
 @app.route('/', methods=["GET", "POST"])
 def login():
     error = None
+    form = LoginForm(request.form)
     if request.method == "POST":
-        if request.form['username'] != app.config['USERNAME'] \
-                or request.form['password'] != app.config['PASSWORD']:
-            error = 'Invalid Credentials. Please try again.'
-            return render_template('login.html', error=error)
+        if form.validate_on_submit():
+            user = db.session.query(User).filter_by(name=form.name.data).first()
+            if user is not None and user.password == form.password.data:
+                session['logged_in'] = True
+                flash("Welcome!")
+                return redirect(url_for('tasks'))
+            else:
+                error = 'Invalid username or password'
         else:
-            session['logged_in'] = True
-            flash('Welcome!')
-            return redirect(url_for('tasks'))
-    return render_template('login.html')
+            error = 'Both fields are required'
+    return render_template('login.html', form=form, error=error)
 
 @app.route('/tasks/')
 @login_required
