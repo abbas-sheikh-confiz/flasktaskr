@@ -4,6 +4,7 @@ from functools import wraps
 from flask import Flask, flash, url_for, redirect, render_template, \
                   request, session
 from flask_sqlalchemy import SQLAlchemy
+import datetime
 
 # config
 app = Flask(__name__)
@@ -46,6 +47,7 @@ def register():
 @app.route('/logout/')
 def logout():
     session.pop('logged_in', None)
+    session.pop('user_id', None)
     flash('Goodbye!')
     return redirect(url_for('login'))
 
@@ -58,6 +60,7 @@ def login():
             user = db.session.query(User).filter_by(name=form.name.data).first()
             if user is not None and user.password == form.password.data:
                 session['logged_in'] = True
+                session['user_id'] = user.id
                 flash("Welcome!")
                 return redirect(url_for('tasks'))
             else:
@@ -88,10 +91,15 @@ def new_task():
             new_task = Task(form.name.data,
                             form.due_date.data,
                             form.priority.data,
-                            1)
+                            datetime.datetime.utcnow(),
+                            1,
+                            session['user_id'])
             db.session.add(new_task)
             db.session.commit()
             flash('New entry was successfully posted. Thanks.')
+        else:
+            flash('All fields are required.')
+            return redirect(url_for('tasks'))
     return redirect(url_for('tasks'))
 
 # mark task as complete
