@@ -60,11 +60,12 @@ def register():
                 flash('Thanks for registration. Please login.')
                 return redirect(url_for('login'))
             except IntegrityError:
-                error = 'That username and/or email alreadty exist.'
+                error = 'That username and/or email already exist.'
                 return render_template('register.html', form=form, error=error)
     return render_template('register.html', form=form, error=error)
 
 @app.route('/logout/')
+@login_required
 def logout():
     session.pop('logged_in', None)
     session.pop('user_id', None)
@@ -122,7 +123,7 @@ def new_task():
                             closed_tasks = closed_tasks())
 
 # mark task as complete
-@app.route('/complete/<int:task_id>')
+@app.route('/complete/<int:task_id>/')
 @login_required
 def complete(task_id):
     db.session.query(Task).filter_by(task_id=task_id).update({'status':0})
@@ -131,10 +132,10 @@ def complete(task_id):
     return redirect(url_for('tasks'))
 
 # delete the task
-@app.route('/delete/<int:task_id>')
+@app.route('/delete/<int:task_id>/')
 @login_required
 def delete_entry(task_id):
     db.session.query(Task).filter_by(task_id=task_id).delete()
     db.session.commit()
-    flash('The tasks was deleted. Why not add a new one?')
+    flash('The task was deleted. Why not add a new one?')
     return redirect(url_for('tasks'))
