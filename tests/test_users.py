@@ -3,9 +3,9 @@
 import os
 import unittest
 
-from views import app, db
-from _config import basedir
-from models import User
+from project import app, db
+from project._config import basedir
+from project.models import User
 
 # Define constants to be used in test cases
 TEST_DB = 'test.db'
@@ -100,7 +100,7 @@ class UsersTests(unittest.TestCase):
     def test_user_registration(self):
         #self.app.get('register/', follow_redirects=True)
         response = self.register('abuzar', 'abuzar@gmail.com', 'lahore', 'lahore')
-        self.assertIn(b'Thanks for registration. Please login.', response.data)
+        self.assertIn(b'Thanks for registering. Please login.', response.data)
 
     def test_user_registration_error(self):
         #self.app.get('register/', follow_redirects=True)
